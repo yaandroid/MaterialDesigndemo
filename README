@@ -1,0 +1,8 @@
+Here I am shring this project publicly. Using material design libs , and viewPager and CollapsingToolbarLayouts .
+This app is for demo perpose . 
+
+     android.support.design.widget.CollapsingToolbarLayout
+         
+         android.support.v4.widget.NestedScrollView
+         
+         CoordinatorLayout
