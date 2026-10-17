@@ -5,6 +5,9 @@ on:
     branches: [ brahm-crm-apk ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,11 +26,33 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug --stacktrace
+        run: |
+          set +e
+          ./gradlew assembleDebug --stacktrace > build_log.txt 2>&1
+          echo "EXIT=$?" >> "$GITHUB_ENV"
+          echo "---- tail of build log ----"
+          tail -n 40 build_log.txt
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: BrahmCRM-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
+      - name: Publish outputs to brahm-crm-out branch
+        if: always()
+        run: |
+          rm -rf out && mkdir -p out
+          cp build_log.txt out/ 2>/dev/null || true
+          if [ -f app/build/outputs/apk/debug/app-debug.apk ]; then
+            cp app/build/outputs/apk/debug/app-debug.apk out/BrahmCRM-debug.apk
+            echo "APK copied"
+          else
+            echo "No APK produced" > out/NO_APK.txt
+          fi
+          cd out
+          git init -q
+          git config user.email "ci@brahm.local"
+          git config user.name "BRAHM CI"
+          git checkout -q -b brahm-crm-out
+          git add -A
+          git commit -q -m "CI outputs [skip ci]"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" brahm-crm-out
+
+      - name: Reflect build status
+        if: always()
+        run: exit ${{ env.EXIT }}
