@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">BRAHM CRM</string>
+    <string name="notif_service_label">BRAHM CRM Inbox Reader</string>
+    <string name="company">Brahm InnerBrain Technologies Pvt. Ltd.</string>
+    <string name="developed_by">Developed by Sandeep Kushwah</string>
+    <string name="software_contact">7990918709</string>
+</resources>
