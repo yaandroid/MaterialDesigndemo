@@ -72,6 +72,18 @@ data class ScheduledReply(
     val createdAt: Long = System.currentTimeMillis()
 )
 
+/** A bulk message scheduled for a chosen time. SMS auto-sends; WhatsApp reminds (assisted). */
+@Entity(tableName = "scheduled_broadcasts")
+data class ScheduledBroadcast(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val channel: String,          // "sms" | "wa" | "wab"
+    val message: String,
+    val phonesCsv: String,        // comma-separated phone numbers
+    val dueAt: Long,
+    val sent: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
 /** Lightweight grouped row for the inbox list (one line per person). */
 data class InboxPerson(
     val person: String,

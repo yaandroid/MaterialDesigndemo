@@ -62,5 +62,10 @@
             android:name=".service.ScheduledReplyReceiver"
             android:exported="false" />
 
+        <!-- Fires scheduled bulk broadcasts -->
+        <receiver
+            android:name=".service.BroadcastAlarmReceiver"
+            android:exported="false" />
+
     </application>
 </manifest>

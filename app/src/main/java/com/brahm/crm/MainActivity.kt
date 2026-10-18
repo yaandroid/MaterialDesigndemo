@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Language
@@ -51,6 +52,7 @@ import androidx.navigation.compose.rememberNavController
 import com.brahm.crm.ui.AppViewModel
 import com.brahm.crm.ui.BrahmTheme
 import com.brahm.crm.ui.screens.DashboardScreen
+import com.brahm.crm.ui.screens.BroadcastScreen
 import com.brahm.crm.ui.screens.CallReplyScreen
 import com.brahm.crm.ui.screens.ChatThreadScreen
 import com.brahm.crm.ui.screens.InboxScreen
@@ -66,6 +68,7 @@ private enum class Dest(val route: String, val title: String, val icon: ImageVec
     KANBAN("kanban", "Board", Icons.Filled.ViewKanban),
     INBOX("inbox", "Inbox", Icons.Filled.Inbox),
     CALL_REPLY("call_reply", "Call Auto-Reply", Icons.Filled.PhoneCallback),
+    BROADCAST("broadcast", "Broadcast", Icons.Filled.Campaign),
     WHATSAPP_WEB("wa_web", "WhatsApp Web", Icons.Filled.Language),
     SETTINGS("settings", "Settings", Icons.Filled.Settings)
 }
@@ -165,6 +168,7 @@ private fun AppRoot(vm: AppViewModel) {
                     })
                 }
                 composable(Dest.CALL_REPLY.route) { CallReplyScreen(vm) }
+                composable(Dest.BROADCAST.route) { BroadcastScreen(vm) }
                 composable(Dest.WHATSAPP_WEB.route) { WhatsAppWebScreen() }
                 composable(Dest.SETTINGS.route) { SettingsScreen(vm) }
                 composable("thread/{person}") { backStackEntry ->

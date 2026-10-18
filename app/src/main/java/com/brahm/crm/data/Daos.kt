@@ -136,3 +136,21 @@ interface ScheduledReplyDao {
     @Delete
     suspend fun delete(r: ScheduledReply)
 }
+
+@Dao
+interface ScheduledBroadcastDao {
+    @Query("SELECT * FROM scheduled_broadcasts ORDER BY sent ASC, dueAt ASC")
+    fun observeAll(): Flow<List<ScheduledBroadcast>>
+
+    @Query("SELECT * FROM scheduled_broadcasts WHERE id = :id")
+    suspend fun byId(id: Long): ScheduledBroadcast?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(b: ScheduledBroadcast): Long
+
+    @Query("UPDATE scheduled_broadcasts SET sent = 1 WHERE id = :id")
+    suspend fun markSent(id: Long)
+
+    @Delete
+    suspend fun delete(b: ScheduledBroadcast)
+}

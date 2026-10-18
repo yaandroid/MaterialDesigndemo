@@ -13,6 +13,7 @@ import com.brahm.crm.data.InboxPerson
 import com.brahm.crm.data.Lead
 import com.brahm.crm.data.NotificationLog
 import com.brahm.crm.data.PersonSetting
+import com.brahm.crm.data.ScheduledBroadcast
 import com.brahm.crm.data.ScheduledReply
 import com.brahm.crm.data.Stage
 import com.brahm.crm.data.TaskItem
@@ -93,6 +94,30 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun deleteScheduledReply(r: ScheduledReply) = viewModelScope.launch {
         db.scheduledReplyDao().delete(r)
     }
+
+    // ---- Bulk broadcast ----
+    val scheduledBroadcasts: StateFlow<List<ScheduledBroadcast>> =
+        db.scheduledBroadcastDao().observeAll().stateInVm(emptyList())
+
+    fun saveScheduledBroadcast(
+        channel: String, message: String, phones: List<String>, dueAt: Long,
+        onSaved: (Long) -> Unit
+    ) = viewModelScope.launch {
+        val id = db.scheduledBroadcastDao().upsert(
+            ScheduledBroadcast(
+                channel = channel, message = message,
+                phonesCsv = phones.joinToString(","), dueAt = dueAt
+            )
+        )
+        onSaved(id)
+    }
+
+    fun deleteScheduledBroadcast(b: ScheduledBroadcast) = viewModelScope.launch {
+        db.scheduledBroadcastDao().delete(b)
+    }
+
+    /** SIM selected for SMS (shared with call auto-reply). */
+    val smsSimSubId: Int get() = settings.callSimSubId
 
     // ---------- Settings as UI state ----------
     var groqKey by mutableStateOf(settings.groqApiKey); private set

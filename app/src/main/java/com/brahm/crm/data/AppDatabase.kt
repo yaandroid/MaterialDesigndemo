@@ -7,8 +7,8 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [Lead::class, TaskItem::class, NotificationLog::class,
-        PersonSetting::class, ScheduledReply::class],
-    version = 3,
+        PersonSetting::class, ScheduledReply::class, ScheduledBroadcast::class],
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -17,6 +17,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun notificationDao(): NotificationDao
     abstract fun personSettingDao(): PersonSettingDao
     abstract fun scheduledReplyDao(): ScheduledReplyDao
+    abstract fun scheduledBroadcastDao(): ScheduledBroadcastDao
 
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
