@@ -29,6 +29,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,14 +48,14 @@ fun CallReplyScreen(vm: AppViewModel) {
     val context = LocalContext.current
     val scroll = rememberScrollState()
 
-    var smsText by remember { mutableStateOf(vm.callSmsText) }
-    var waText by remember { mutableStateOf(vm.callWhatsappText) }
     var exclude by remember { mutableStateOf(vm.callExcludeNumbers) }
-    val sims = remember { SimUtil.listSims(context) }
+    // Refresh key so the SIM list re-reads after permission is granted.
+    var simRefresh by remember { mutableIntStateOf(0) }
+    val sims = remember(simRefresh) { SimUtil.listSims(context) }
 
     val permLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
-    ) { /* result handled by system; user can re-toggle */ }
+    ) { simRefresh++ }
 
     fun requestCallPerms() {
         val needed = mutableListOf(
@@ -68,11 +69,8 @@ fun CallReplyScreen(vm: AppViewModel) {
         val missing = needed.filter {
             ContextCompat.checkSelfPermission(context, it) != PackageManager.PERMISSION_GRANTED
         }
-        if (missing.isEmpty()) {
-            Toast.makeText(context, "All permissions granted", Toast.LENGTH_SHORT).show()
-        } else {
-            permLauncher.launch(missing.toTypedArray())
-        }
+        if (missing.isEmpty()) { simRefresh++; Toast.makeText(context, "All permissions granted", Toast.LENGTH_SHORT).show() }
+        else permLauncher.launch(missing.toTypedArray())
     }
 
     Column(
@@ -83,20 +81,15 @@ fun CallReplyScreen(vm: AppViewModel) {
     ) {
         Text("Call Auto-Reply", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Text(
-            "When you miss an incoming call, reply automatically.",
+            "Reply automatically after missed, incoming or outgoing calls.",
             fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(Modifier.height(12.dp))
 
-        // Master switch
+        // Master + permission
         CardBox {
-            ToggleRow(
-                "Enable call auto-reply",
-                "Master switch for this feature",
-                vm.callReplyEnabled
-            ) { on ->
-                vm.setCallReply(on)
-                if (on) requestCallPerms()
+            ToggleRow("Enable call auto-reply", "Master switch", vm.callReplyEnabled) { on ->
+                vm.setCallReply(on); if (on) requestCallPerms()
             }
             Spacer(Modifier.height(6.dp))
             OutlinedButton(onClick = { requestCallPerms() }, modifier = Modifier.fillMaxWidth()) {
@@ -106,139 +99,117 @@ fun CallReplyScreen(vm: AppViewModel) {
 
         Spacer(Modifier.height(12.dp))
 
-        // Which call events trigger a reply
-        CardBox("Reply on which calls") {
-            ToggleRow("Missed calls", "Rang but not answered", vm.callOnMissed) { vm.updateCallOnMissed(it) }
-            ToggleRow("Incoming (answered)", "After an answered incoming call", vm.callOnIncoming) { vm.updateCallOnIncoming(it) }
-            ToggleRow("Outgoing calls", "After a call you made", vm.callOnOutgoing) { vm.updateCallOnOutgoing(it) }
-        }
+        // Per-event cards
+        EventCard(
+            title = "Missed calls", subtitle = "Rang but not answered",
+            enabled = vm.callOnMissed, onEnabled = { vm.updateCallOnMissed(it) },
+            message = vm.msgMissed, onMessage = { vm.updateMsgMissed(it) },
+            channel = vm.channelMissed, onChannel = { vm.updateChannelMissed(it) }
+        )
+        Spacer(Modifier.height(12.dp))
+        EventCard(
+            title = "Incoming (answered)", subtitle = "After an answered incoming call",
+            enabled = vm.callOnIncoming, onEnabled = { vm.updateCallOnIncoming(it) },
+            message = vm.msgIncoming, onMessage = { vm.updateMsgIncoming(it) },
+            channel = vm.channelIncoming, onChannel = { vm.updateChannelIncoming(it) }
+        )
+        Spacer(Modifier.height(12.dp))
+        EventCard(
+            title = "Outgoing calls", subtitle = "After a call you made",
+            enabled = vm.callOnOutgoing, onEnabled = { vm.updateCallOnOutgoing(it) },
+            message = vm.msgOutgoing, onMessage = { vm.updateMsgOutgoing(it) },
+            channel = vm.channelOutgoing, onChannel = { vm.updateChannelOutgoing(it) }
+        )
 
         Spacer(Modifier.height(12.dp))
 
-        // SMS
-        CardBox("Auto SMS reply") {
-            ToggleRow(
-                "Send an SMS on missed call",
-                "A text reply to the caller",
-                vm.callSmsEnabled
-            ) { vm.setCallSms(it) }
-
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = smsText,
-                onValueChange = { smsText = it },
-                label = { Text("SMS message") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(Modifier.height(10.dp))
+        // SIM
+        CardBox("SIM") {
             ToggleRow(
                 "Reply from the same SIM",
                 "Use whichever SIM the call came on (when the phone reports it)",
                 vm.callReplyFromSameSim
             ) { vm.setCallSameSim(it) }
-
             Spacer(Modifier.height(6.dp))
             Text("Default SIM (fallback)", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(4.dp))
             sims.forEach { sim ->
                 Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .selectable(
-                            selected = vm.callSimSubId == sim.subId,
-                            onClick = { vm.setCallSim(sim.subId) }
-                        )
+                    Modifier.fillMaxWidth()
+                        .selectable(selected = vm.callSimSubId == sim.subId, onClick = { vm.setCallSim(sim.subId) })
                         .padding(vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    RadioButton(
-                        selected = vm.callSimSubId == sim.subId,
-                        onClick = { vm.setCallSim(sim.subId) }
-                    )
+                    RadioButton(selected = vm.callSimSubId == sim.subId, onClick = { vm.setCallSim(sim.subId) })
                     Text(sim.label, fontSize = 14.sp)
                 }
             }
             if (sims.size <= 1) {
                 Text(
-                    "Grant permission above to list SIM 1 / SIM 2.",
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    "Only Default shows until permission is granted. Tap “Grant” above, allow Phone, then SIM 1 / SIM 2 will appear.",
+                    fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
-
-        Spacer(Modifier.height(12.dp))
-
-        // WhatsApp assisted
-        CardBox("WhatsApp reply (one-tap)") {
-            ToggleRow(
-                "Offer a WhatsApp reply",
-                "A notification opens WhatsApp with your message ready — you press Send",
-                vm.callWhatsappEnabled
-            ) { vm.setCallWhatsapp(it) }
-
-            Spacer(Modifier.height(8.dp))
-            Text("Which WhatsApp?", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
-            Spacer(Modifier.height(4.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
-                    selected = vm.callWhatsappTarget == "wa",
-                    onClick = { vm.updateCallWhatsappTarget("wa") },
-                    label = { Text("Normal") }
-                )
-                FilterChip(
-                    selected = vm.callWhatsappTarget == "wab",
-                    onClick = { vm.updateCallWhatsappTarget("wab") },
-                    label = { Text("Business") }
-                )
+            Spacer(Modifier.height(6.dp))
+            OutlinedButton(onClick = { simRefresh++ }, modifier = Modifier.fillMaxWidth()) {
+                Text("Refresh SIM list")
             }
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = waText,
-                onValueChange = { waText = it },
-                label = { Text("WhatsApp message") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(4.dp))
-            Text(
-                "Safe mode: the app never presses Send for you — it opens the chat with the message filled in, and you tap Send.",
-                fontSize = 11.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
 
         Spacer(Modifier.height(12.dp))
 
         // Exclude
         CardBox("Exclude numbers") {
-            Text(
-                "These numbers never get an auto-reply. One per line, or comma separated.",
-                fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            Text("These numbers never get an auto-reply. One per line or comma separated.",
+                fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
-                value = exclude,
-                onValueChange = { exclude = it },
+                value = exclude, onValueChange = { exclude = it },
                 label = { Text("Excluded numbers") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(110.dp)
+                modifier = Modifier.fillMaxWidth().height(90.dp)
             )
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = { vm.setCallExclude(exclude.trim()); Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show() },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Save excluded numbers") }
         }
 
-        Spacer(Modifier.height(16.dp))
-        OutlinedButton(
-            onClick = {
-                vm.updateCallSmsText(smsText.trim())
-                vm.updateCallWhatsappText(waText.trim())
-                vm.setCallExclude(exclude.trim())
-                Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) { Text("Save Call Auto-Reply settings") }
-
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+@Composable
+private fun EventCard(
+    title: String, subtitle: String,
+    enabled: Boolean, onEnabled: (Boolean) -> Unit,
+    message: String, onMessage: (String) -> Unit,
+    channel: String, onChannel: (String) -> Unit
+) {
+    var text by remember(message) { mutableStateOf(message) }
+    CardBox(title) {
+        Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(6.dp))
+        ToggleRow("Auto-reply for this", "Turn on to reply on these calls", enabled, onEnabled)
+
+        Spacer(Modifier.height(8.dp))
+        Text("Send via", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(channel == "sms", { onChannel("sms") }, { Text("SMS") })
+            FilterChip(channel == "wa", { onChannel("wa") }, { Text("WhatsApp") })
+            FilterChip(channel == "both", { onChannel("both") }, { Text("Both") })
+        }
+
+        Spacer(Modifier.height(8.dp))
+        OutlinedTextField(
+            value = text, onValueChange = { text = it },
+            label = { Text("Message") },
+            modifier = Modifier.fillMaxWidth().height(96.dp)
+        )
+        Spacer(Modifier.height(6.dp))
+        OutlinedButton(onClick = { onMessage(text.trim()) }, modifier = Modifier.fillMaxWidth()) {
+            Text("Save message")
+        }
     }
 }
 
@@ -253,7 +224,7 @@ private fun CardBox(title: String? = null, content: @Composable () -> Unit) {
         Column(Modifier.padding(16.dp)) {
             if (title != null) {
                 Text(title, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(10.dp))
             }
             content()
         }
@@ -263,9 +234,7 @@ private fun CardBox(title: String? = null, content: @Composable () -> Unit) {
 @Composable
 private fun ToggleRow(title: String, subtitle: String, checked: Boolean, onChange: (Boolean) -> Unit) {
     Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        Modifier.fillMaxWidth().padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(Modifier.weight(1f)) {

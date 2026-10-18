@@ -164,6 +164,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var callOnIncoming by mutableStateOf(settings.callOnIncoming); private set
     var callOnOutgoing by mutableStateOf(settings.callOnOutgoing); private set
     var bulkDelaySeconds by mutableStateOf(settings.bulkDelaySeconds); private set
+    var msgMissed by mutableStateOf(settings.msgMissed); private set
+    var msgIncoming by mutableStateOf(settings.msgIncoming); private set
+    var msgOutgoing by mutableStateOf(settings.msgOutgoing); private set
+    var channelMissed by mutableStateOf(settings.channelMissed); private set
+    var channelIncoming by mutableStateOf(settings.channelIncoming); private set
+    var channelOutgoing by mutableStateOf(settings.channelOutgoing); private set
 
     fun saveGroqKey(v: String) { settings.groqApiKey = v; groqKey = v }
     fun saveGroqModel(v: String) { settings.groqModel = v; groqModel = v }
@@ -185,6 +191,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun updateCallOnIncoming(v: Boolean) { settings.callOnIncoming = v; callOnIncoming = v }
     fun updateCallOnOutgoing(v: Boolean) { settings.callOnOutgoing = v; callOnOutgoing = v }
     fun setBulkDelay(v: Int) { settings.bulkDelaySeconds = v; bulkDelaySeconds = v }
+    fun updateMsgMissed(v: String) { settings.msgMissed = v; msgMissed = v }
+    fun updateMsgIncoming(v: String) { settings.msgIncoming = v; msgIncoming = v }
+    fun updateMsgOutgoing(v: String) { settings.msgOutgoing = v; msgOutgoing = v }
+    fun updateChannelMissed(v: String) { settings.channelMissed = v; channelMissed = v }
+    fun updateChannelIncoming(v: String) { settings.channelIncoming = v; channelIncoming = v }
+    fun updateChannelOutgoing(v: String) { settings.channelOutgoing = v; channelOutgoing = v }
 
     // ---------- Lead actions ----------
     fun addLead(name: String, phone: String, email: String, note: String) {

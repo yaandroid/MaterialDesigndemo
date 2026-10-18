@@ -54,17 +54,17 @@ object CallReplyManager {
         // Choose the SIM: same SIM the call used (if detected + toggle), else the chosen default.
         val subId = if (s.callReplyFromSameSim && callSubId >= 0) callSubId else s.callSimSubId
 
-        val label = when (event) {
-            PhoneStateReceiver.Event.MISSED -> "Missed call: $number"
-            PhoneStateReceiver.Event.INCOMING -> "Call: $number"
-            PhoneStateReceiver.Event.OUTGOING -> "You called: $number"
+        val (message, channel, label) = when (event) {
+            PhoneStateReceiver.Event.MISSED -> Triple(s.msgMissed, s.channelMissed, "Missed call: $number")
+            PhoneStateReceiver.Event.INCOMING -> Triple(s.msgIncoming, s.channelIncoming, "Call: $number")
+            PhoneStateReceiver.Event.OUTGOING -> Triple(s.msgOutgoing, s.channelOutgoing, "You called: $number")
         }
 
-        if (s.callSmsEnabled) {
-            trySendSms(context, number, s.callSmsText, subId)
+        if (channel == "sms" || channel == "both") {
+            trySendSms(context, number, message, subId)
         }
-        if (s.callWhatsappEnabled) {
-            postAssisted(context, number, number, s.callWhatsappText, s.callWhatsappTarget, label)
+        if (channel == "wa" || channel == "both") {
+            postAssisted(context, number, number, message, s.callWhatsappTarget, label)
         }
     }
 

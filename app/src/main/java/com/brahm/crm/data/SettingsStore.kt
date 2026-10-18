@@ -97,6 +97,28 @@ class SettingsStore private constructor(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_CALL_ON_OUTGOING, false)
         set(v) = prefs.edit().putBoolean(KEY_CALL_ON_OUTGOING, v).apply()
 
+    // Per-event custom message
+    var msgMissed: String
+        get() = prefs.getString(KEY_MSG_MISSED, DEFAULT_MISSED_SMS) ?: DEFAULT_MISSED_SMS
+        set(v) = prefs.edit().putString(KEY_MSG_MISSED, v).apply()
+    var msgIncoming: String
+        get() = prefs.getString(KEY_MSG_INCOMING, DEFAULT_INCOMING_SMS) ?: DEFAULT_INCOMING_SMS
+        set(v) = prefs.edit().putString(KEY_MSG_INCOMING, v).apply()
+    var msgOutgoing: String
+        get() = prefs.getString(KEY_MSG_OUTGOING, DEFAULT_OUTGOING_SMS) ?: DEFAULT_OUTGOING_SMS
+        set(v) = prefs.edit().putString(KEY_MSG_OUTGOING, v).apply()
+
+    // Per-event channel: "sms" | "wa" | "both"
+    var channelMissed: String
+        get() = prefs.getString(KEY_CH_MISSED, "sms") ?: "sms"
+        set(v) = prefs.edit().putString(KEY_CH_MISSED, v).apply()
+    var channelIncoming: String
+        get() = prefs.getString(KEY_CH_INCOMING, "sms") ?: "sms"
+        set(v) = prefs.edit().putString(KEY_CH_INCOMING, v).apply()
+    var channelOutgoing: String
+        get() = prefs.getString(KEY_CH_OUTGOING, "sms") ?: "sms"
+        set(v) = prefs.edit().putString(KEY_CH_OUTGOING, v).apply()
+
     /** Delay in seconds between each SMS in a bulk send (0 = no delay). */
     var bulkDelaySeconds: Int
         get() = prefs.getInt(KEY_BULK_DELAY, 0)
@@ -140,9 +162,19 @@ class SettingsStore private constructor(private val prefs: SharedPreferences) {
         private const val KEY_CALL_ON_INCOMING = "call_on_incoming"
         private const val KEY_CALL_ON_OUTGOING = "call_on_outgoing"
         private const val KEY_BULK_DELAY = "bulk_delay_seconds"
+        private const val KEY_MSG_MISSED = "msg_missed"
+        private const val KEY_MSG_INCOMING = "msg_incoming"
+        private const val KEY_MSG_OUTGOING = "msg_outgoing"
+        private const val KEY_CH_MISSED = "ch_missed"
+        private const val KEY_CH_INCOMING = "ch_incoming"
+        private const val KEY_CH_OUTGOING = "ch_outgoing"
         const val DEFAULT_MODEL = "llama-3.3-70b-versatile"
         const val DEFAULT_MISSED_SMS =
             "Namaste, abhi hum aapki call nahi utha paaye. Kripya batayein hum kaise madad karein. — BRAHM InnerBrain"
+        const val DEFAULT_INCOMING_SMS =
+            "Namaste, aapse baat karke accha laga. Kisi bhi madad ke liye message karein. — BRAHM InnerBrain"
+        const val DEFAULT_OUTGOING_SMS =
+            "Namaste, humne aapko call kiya tha. Jab free hon to batayein. — BRAHM InnerBrain"
         const val DEFAULT_MISSED_WA =
             "Namaste 🙏 abhi call miss ho gayi. Batayein hum kaise madad karein? — BRAHM InnerBrain"
 
