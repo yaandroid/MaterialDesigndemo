@@ -13,8 +13,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.PhoneCallback
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ViewKanban
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Card
@@ -145,14 +154,14 @@ private data class Shortcut(val label: String, val icon: androidx.compose.ui.gra
 @Composable
 private fun QuickGrid(onNavigate: (String) -> Unit) {
     val items = listOf(
-        Shortcut("Leads", androidx.compose.material.icons.Icons.Filled.People, "leads"),
-        Shortcut("Board", androidx.compose.material.icons.Icons.Filled.ViewKanban, "kanban"),
-        Shortcut("Inbox", androidx.compose.material.icons.Icons.Filled.Inbox, "inbox"),
-        Shortcut("Broadcast", androidx.compose.material.icons.Icons.Filled.Campaign, "broadcast"),
-        Shortcut("Call Reply", androidx.compose.material.icons.Icons.Filled.PhoneCallback, "call_reply"),
-        Shortcut("Analytics", androidx.compose.material.icons.Icons.Filled.Insights, "analytics"),
-        Shortcut("WA Web", androidx.compose.material.icons.Icons.Filled.Language, "wa_web"),
-        Shortcut("Settings", androidx.compose.material.icons.Icons.Filled.Settings, "settings")
+        Shortcut("Leads", Icons.Filled.People, "leads"),
+        Shortcut("Board", Icons.Filled.ViewKanban, "kanban"),
+        Shortcut("Inbox", Icons.Filled.Inbox, "inbox"),
+        Shortcut("Broadcast", Icons.Filled.Campaign, "broadcast"),
+        Shortcut("Call Reply", Icons.Filled.PhoneCallback, "call_reply"),
+        Shortcut("Analytics", Icons.Filled.Insights, "analytics"),
+        Shortcut("WA Web", Icons.Filled.Language, "wa_web"),
+        Shortcut("Settings", Icons.Filled.Settings, "settings")
     )
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         items.chunked(4).forEach { row ->
