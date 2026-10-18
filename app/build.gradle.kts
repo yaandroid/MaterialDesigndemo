@@ -12,7 +12,7 @@ android {
         applicationId = "com.brahm.crm"
         minSdk = 24
         targetSdk = 34
-        versionCode = 3
+        versionCode = 1
         versionName = "1.1"
         vectorDrawables { useSupportLibrary = true }
     }

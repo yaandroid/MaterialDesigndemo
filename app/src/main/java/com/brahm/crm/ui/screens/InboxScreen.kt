@@ -1,5 +1,6 @@
 package com.brahm.crm.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,11 +14,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddTask
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -127,9 +130,24 @@ fun InboxScreen(vm: AppViewModel, onOpenPerson: (String) -> Unit = {}) {
                     modifier = Modifier.padding(8.dp)
                 )
             } else {
+                OutlinedButton(
+                    onClick = {
+                        filtered.forEach { vm.movePersonToBoard(it.person, "", com.brahm.crm.data.Stage.NEW) }
+                        Toast.makeText(context, "Added ${filtered.size} to board (New)", Toast.LENGTH_SHORT).show()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Add all to board (New)") }
+                Spacer(Modifier.height(8.dp))
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(filtered, key = { it.person + it.appLabel }) { p ->
-                        PersonRow(p) { onOpenPerson(p.person) }
+                        PersonRow(
+                            p,
+                            onClick = { onOpenPerson(p.person) },
+                            onAddToBoard = {
+                                vm.movePersonToBoard(p.person, "", com.brahm.crm.data.Stage.NEW)
+                                Toast.makeText(context, "${p.person} → board (New)", Toast.LENGTH_SHORT).show()
+                            }
+                        )
                     }
                 }
             }
@@ -149,7 +167,7 @@ private fun InfoCard(text: String) {
 }
 
 @Composable
-private fun PersonRow(p: InboxPerson, onClick: () -> Unit) {
+private fun PersonRow(p: InboxPerson, onClick: () -> Unit, onAddToBoard: () -> Unit) {
     Card(
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -177,6 +195,13 @@ private fun PersonRow(p: InboxPerson, onClick: () -> Unit) {
                     "${p.appLabel} · ${p.count} message(s)",
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.outline
+                )
+            }
+            IconButton(onClick = onAddToBoard) {
+                Icon(
+                    Icons.Filled.AddTask,
+                    contentDescription = "Add to board",
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
