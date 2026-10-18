@@ -50,6 +50,28 @@ data class NotificationLog(
     val deleted: Boolean = false // true if the sender later deleted this message
 )
 
+/** Per-person settings controlled from the chat toolbar. */
+@Entity(tableName = "person_settings")
+data class PersonSetting(
+    @PrimaryKey val person: String,
+    val autoReplyEnabled: Boolean = false,   // assisted reply offered automatically
+    val aiAutoEnabled: Boolean = false,      // pre-draft an AI reply when a message arrives
+    val boardStage: String = ""              // last stage this person was filed under
+)
+
+/** A reply the user scheduled to send later (assisted — fires a one-tap notification). */
+@Entity(tableName = "scheduled_replies")
+data class ScheduledReply(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val person: String,
+    val phone: String = "",
+    val text: String,
+    val dueAt: Long,
+    val target: String = "wa",               // wa | wab
+    val sent: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
 /** Lightweight grouped row for the inbox list (one line per person). */
 data class InboxPerson(
     val person: String,

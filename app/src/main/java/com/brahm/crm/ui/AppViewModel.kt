@@ -12,6 +12,8 @@ import com.brahm.crm.ai.GroqClient
 import com.brahm.crm.data.InboxPerson
 import com.brahm.crm.data.Lead
 import com.brahm.crm.data.NotificationLog
+import com.brahm.crm.data.PersonSetting
+import com.brahm.crm.data.ScheduledReply
 import com.brahm.crm.data.Stage
 import com.brahm.crm.data.TaskItem
 import com.brahm.crm.util.ContactsImporter
@@ -44,6 +46,53 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun notificationsForPerson(person: String): StateFlow<List<NotificationLog>> =
         db.notificationDao().observeForPerson(person).stateInVm(emptyList())
+
+    // ---- Per-person settings ----
+    fun personSetting(person: String): StateFlow<PersonSetting?> =
+        db.personSettingDao().observe(person).stateInVm(null)
+
+    fun savePersonSetting(s: PersonSetting) = viewModelScope.launch {
+        db.personSettingDao().upsert(s)
+    }
+
+    /** Move a person onto the Kanban board at the given stage (creates a lead if needed). */
+    fun movePersonToBoard(person: String, phone: String, stage: Stage) = viewModelScope.launch {
+        val existing = db.personSettingDao().get(person)
+        db.personSettingDao().upsert(
+            (existing ?: PersonSetting(person)).copy(boardStage = stage.name)
+        )
+        // find or create a lead for this person
+        val leadList = db.leadDao()
+        val current = leads.value.firstOrNull {
+            it.name.equals(person, true) || (phone.isNotBlank() && it.phone == phone)
+        }
+        if (current == null) {
+            leadList.upsert(Lead(name = person, phone = phone, source = "Inbox", stage = stage.name))
+        } else {
+            leadList.update(current.copy(stage = stage.name, updatedAt = System.currentTimeMillis()))
+        }
+    }
+
+    // ---- Scheduled replies ----
+    val scheduledReplies: StateFlow<List<ScheduledReply>> =
+        db.scheduledReplyDao().observeAll().stateInVm(emptyList())
+
+    fun scheduledFor(person: String): StateFlow<List<ScheduledReply>> =
+        db.scheduledReplyDao().observeForPerson(person).stateInVm(emptyList())
+
+    fun addScheduledReply(
+        person: String, phone: String, text: String, dueAt: Long, target: String,
+        onScheduled: (Long) -> Unit
+    ) = viewModelScope.launch {
+        val id = db.scheduledReplyDao().upsert(
+            ScheduledReply(person = person, phone = phone, text = text, dueAt = dueAt, target = target)
+        )
+        onScheduled(id)
+    }
+
+    fun deleteScheduledReply(r: ScheduledReply) = viewModelScope.launch {
+        db.scheduledReplyDao().delete(r)
+    }
 
     // ---------- Settings as UI state ----------
     var groqKey by mutableStateOf(settings.groqApiKey); private set

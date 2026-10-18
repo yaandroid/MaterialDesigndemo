@@ -103,3 +103,36 @@ interface NotificationDao {
     @Query("DELETE FROM notifications WHERE postedAt < :before")
     suspend fun deleteOlderThan(before: Long)
 }
+
+@Dao
+interface PersonSettingDao {
+    @Query("SELECT * FROM person_settings WHERE person = :person")
+    fun observe(person: String): Flow<PersonSetting?>
+
+    @Query("SELECT * FROM person_settings WHERE person = :person")
+    suspend fun get(person: String): PersonSetting?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(s: PersonSetting)
+}
+
+@Dao
+interface ScheduledReplyDao {
+    @Query("SELECT * FROM scheduled_replies ORDER BY sent ASC, dueAt ASC")
+    fun observeAll(): Flow<List<ScheduledReply>>
+
+    @Query("SELECT * FROM scheduled_replies WHERE person = :person ORDER BY dueAt ASC")
+    fun observeForPerson(person: String): Flow<List<ScheduledReply>>
+
+    @Query("SELECT * FROM scheduled_replies WHERE id = :id")
+    suspend fun byId(id: Long): ScheduledReply?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(r: ScheduledReply): Long
+
+    @Query("UPDATE scheduled_replies SET sent = 1 WHERE id = :id")
+    suspend fun markSent(id: Long)
+
+    @Delete
+    suspend fun delete(r: ScheduledReply)
+}

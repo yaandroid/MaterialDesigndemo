@@ -51,6 +51,7 @@ import com.brahm.crm.ui.AppViewModel
 import com.brahm.crm.ui.BrahmTheme
 import com.brahm.crm.ui.screens.DashboardScreen
 import com.brahm.crm.ui.screens.CallReplyScreen
+import com.brahm.crm.ui.screens.ChatThreadScreen
 import com.brahm.crm.ui.screens.InboxScreen
 import com.brahm.crm.ui.screens.KanbanScreen
 import com.brahm.crm.ui.screens.LeadsScreen
@@ -95,9 +96,12 @@ private fun AppRoot(vm: AppViewModel) {
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route ?: Dest.DASHBOARD.route
     val current = Dest.entries.firstOrNull { it.route == currentRoute } ?: Dest.DASHBOARD
+    // Full-screen routes (their own toolbar) hide the app chrome.
+    val fullScreen = currentRoute.startsWith("thread/")
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = !fullScreen,
         drawerContent = {
             ModalDrawerSheet {
                 Spacer(Modifier.height(20.dp))
@@ -130,14 +134,16 @@ private fun AppRoot(vm: AppViewModel) {
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
-                TopAppBar(
-                    title = { Text(current.title, fontWeight = FontWeight.SemiBold) },
-                    navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                if (!fullScreen) {
+                    TopAppBar(
+                        title = { Text(current.title, fontWeight = FontWeight.SemiBold) },
+                        navigationIcon = {
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Filled.Menu, contentDescription = "Menu")
+                            }
                         }
-                    }
-                )
+                    )
+                }
             }
         ) { inner ->
             NavHost(
@@ -150,9 +156,18 @@ private fun AppRoot(vm: AppViewModel) {
                 composable(Dest.DASHBOARD.route) { DashboardScreen(vm) }
                 composable(Dest.LEADS.route) { LeadsScreen(vm) }
                 composable(Dest.KANBAN.route) { KanbanScreen(vm) }
-                composable(Dest.INBOX.route) { InboxScreen(vm) }
+                composable(Dest.INBOX.route) {
+                    InboxScreen(vm, onOpenPerson = { person ->
+                        navController.navigate("thread/" + java.net.URLEncoder.encode(person, "UTF-8"))
+                    })
+                }
                 composable(Dest.CALL_REPLY.route) { CallReplyScreen(vm) }
                 composable(Dest.SETTINGS.route) { SettingsScreen(vm) }
+                composable("thread/{person}") { backStackEntry ->
+                    val enc = backStackEntry.arguments?.getString("person") ?: ""
+                    val person = runCatching { java.net.URLDecoder.decode(enc, "UTF-8") }.getOrDefault(enc)
+                    ChatThreadScreen(vm, person, onBack = { navController.popBackStack() })
+                }
             }
         }
     }

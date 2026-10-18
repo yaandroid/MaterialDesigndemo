@@ -6,14 +6,17 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [Lead::class, TaskItem::class, NotificationLog::class],
-    version = 2,
+    entities = [Lead::class, TaskItem::class, NotificationLog::class,
+        PersonSetting::class, ScheduledReply::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun leadDao(): LeadDao
     abstract fun taskDao(): TaskDao
     abstract fun notificationDao(): NotificationDao
+    abstract fun personSettingDao(): PersonSettingDao
+    abstract fun scheduledReplyDao(): ScheduledReplyDao
 
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null

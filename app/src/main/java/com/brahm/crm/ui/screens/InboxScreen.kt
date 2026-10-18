@@ -43,10 +43,9 @@ import com.brahm.crm.util.Permissions
 import com.brahm.crm.util.asRelativeTime
 
 @Composable
-fun InboxScreen(vm: AppViewModel) {
+fun InboxScreen(vm: AppViewModel, onOpenPerson: (String) -> Unit = {}) {
     val context = LocalContext.current
     val people by vm.inboxPeople.collectAsState()
-    var openPerson by remember { mutableStateOf<InboxPerson?>(null) }
     var query by remember { mutableStateOf("") }
     // recomputed each recomposition (cheap); reflects whether access is granted
     val accessGranted = Permissions.isNotificationAccessGranted(context)
@@ -130,15 +129,11 @@ fun InboxScreen(vm: AppViewModel) {
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(filtered, key = { it.person + it.appLabel }) { p ->
-                        PersonRow(p) { openPerson = p }
+                        PersonRow(p) { onOpenPerson(p.person) }
                     }
                 }
             }
         }
-    }
-
-    openPerson?.let { p ->
-        PersonThreadDialog(vm = vm, person = p, onDismiss = { openPerson = null })
     }
 }
 

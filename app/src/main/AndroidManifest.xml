@@ -57,5 +57,10 @@
             </intent-filter>
         </receiver>
 
+        <!-- Fires scheduled replies -->
+        <receiver
+            android:name=".service.ScheduledReplyReceiver"
+            android:exported="false" />
+
     </application>
 </manifest>

@@ -42,8 +42,23 @@ object CallReplyManager {
             trySendSms(context, number, s.callSmsText, s.callSimSubId)
         }
         if (s.callWhatsappEnabled) {
-            postWhatsAppReplyNotification(context, number, s.callWhatsappText, s.callWhatsappTarget)
+            postAssisted(context, number, number, s.callWhatsappText, s.callWhatsappTarget, "Missed call: $number")
         }
+    }
+
+    /**
+     * Public entry used by missed-call and scheduled-reply flows: posts a
+     * one-tap notification that opens WhatsApp with the message prefilled.
+     */
+    fun postAssisted(
+        context: Context,
+        person: String,
+        phone: String,
+        text: String,
+        target: String,
+        title: String = "Reply to $person"
+    ) {
+        postWhatsAppReplyNotification(context, phone.ifBlank { person }, text, target, title)
     }
 
     // ---------------- SMS ----------------
@@ -89,7 +104,8 @@ object CallReplyManager {
         context: Context,
         number: String,
         text: String,
-        target: String
+        target: String,
+        title: String = "Reply on WhatsApp"
     ) {
         ensureChannel(context)
 
@@ -115,7 +131,7 @@ object CallReplyManager {
 
         val notif = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.sym_action_chat)
-            .setContentTitle("Missed call: $number")
+            .setContentTitle(title)
             .setContentText("Tap to reply on WhatsApp (you press Send)")
             .setStyle(NotificationCompat.BigTextStyle().bigText("Tap to open WhatsApp with your reply ready. You press Send."))
             .setAutoCancel(true)
