@@ -72,11 +72,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun setCallReply(v: Boolean) { settings.callReplyEnabled = v; callReplyEnabled = v }
     fun setCallSms(v: Boolean) { settings.callSmsEnabled = v; callSmsEnabled = v }
-    fun setCallSmsText(v: String) { settings.callSmsText = v; callSmsText = v }
+    fun updateCallSmsText(v: String) { settings.callSmsText = v; callSmsText = v }
     fun setCallSim(v: Int) { settings.callSimSubId = v; callSimSubId = v }
     fun setCallWhatsapp(v: Boolean) { settings.callWhatsappEnabled = v; callWhatsappEnabled = v }
-    fun setCallWhatsappTarget(v: String) { settings.callWhatsappTarget = v; callWhatsappTarget = v }
-    fun setCallWhatsappText(v: String) { settings.callWhatsappText = v; callWhatsappText = v }
+    fun updateCallWhatsappTarget(v: String) { settings.callWhatsappTarget = v; callWhatsappTarget = v }
+    fun updateCallWhatsappText(v: String) { settings.callWhatsappText = v; callWhatsappText = v }
     fun setCallExclude(v: String) { settings.callExcludeNumbers = v; callExcludeNumbers = v }
 
     // ---------- Lead actions ----------

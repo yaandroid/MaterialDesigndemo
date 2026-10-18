@@ -168,12 +168,12 @@ fun CallReplyScreen(vm: AppViewModel) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = vm.callWhatsappTarget == "wa",
-                    onClick = { vm.setCallWhatsappTarget("wa") },
+                    onClick = { vm.updateCallWhatsappTarget("wa") },
                     label = { Text("Normal") }
                 )
                 FilterChip(
                     selected = vm.callWhatsappTarget == "wab",
-                    onClick = { vm.setCallWhatsappTarget("wab") },
+                    onClick = { vm.updateCallWhatsappTarget("wab") },
                     label = { Text("Business") }
                 )
             }
@@ -214,8 +214,8 @@ fun CallReplyScreen(vm: AppViewModel) {
         Spacer(Modifier.height(16.dp))
         OutlinedButton(
             onClick = {
-                vm.setCallSmsText(smsText.trim())
-                vm.setCallWhatsappText(waText.trim())
+                vm.updateCallSmsText(smsText.trim())
+                vm.updateCallWhatsappText(waText.trim())
                 vm.setCallExclude(exclude.trim())
                 Toast.makeText(context, "Saved", Toast.LENGTH_SHORT).show()
             },
