@@ -76,7 +76,7 @@ fun SettingsScreen(vm: AppViewModel) {
                 listOf("light" to "Light", "dark" to "Dark", "system" to "System").forEach { (v, label) ->
                     FilterChip(
                         selected = vm.themeMode == v,
-                        onClick = { vm.setThemeMode(v) },
+                        onClick = { vm.updateThemeMode(v) },
                         label = { Text(label) }
                     )
                 }
