@@ -88,6 +88,9 @@ interface NotificationDao {
     @Query("SELECT COUNT(DISTINCT person) FROM notifications")
     fun countPeople(): Flow<Int>
 
+    @Query("SELECT * FROM notifications WHERE postedAt >= :since ORDER BY postedAt DESC")
+    suspend fun since(since: Long): List<NotificationLog>
+
     @Query(
         "SELECT id FROM notifications WHERE person = :person AND packageName = :pkg " +
             "AND deleted = 0 ORDER BY postedAt DESC LIMIT 1"

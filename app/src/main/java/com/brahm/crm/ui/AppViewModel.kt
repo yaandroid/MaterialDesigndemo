@@ -119,6 +119,27 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     /** SIM selected for SMS (shared with call auto-reply). */
     val smsSimSubId: Int get() = settings.callSimSubId
 
+    /** Sends SMS to each (phone → message) with a delay (seconds) between each. */
+    fun sendSmsSequential(
+        perPhone: List<Pair<String, String>>,
+        delaySeconds: Int,
+        onProgress: (done: Int, total: Int) -> Unit,
+        onDone: (sent: Int, failed: Int) -> Unit
+    ) = viewModelScope.launch {
+        var sent = 0
+        var failed = 0
+        val total = perPhone.size
+        perPhone.forEachIndexed { index, (phone, body) ->
+            val ok = com.brahm.crm.service.BulkSender.sendOne(getApplication(), phone, body, settings.callSimSubId)
+            if (ok) sent++ else failed++
+            onProgress(index + 1, total)
+            if (delaySeconds > 0 && index < total - 1) {
+                kotlinx.coroutines.delay(delaySeconds * 1000L)
+            }
+        }
+        onDone(sent, failed)
+    }
+
     // ---------- Settings as UI state ----------
     var groqKey by mutableStateOf(settings.groqApiKey); private set
     var groqModel by mutableStateOf(settings.groqModel); private set
@@ -138,6 +159,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var callWhatsappTarget by mutableStateOf(settings.callWhatsappTarget); private set
     var callWhatsappText by mutableStateOf(settings.callWhatsappText); private set
     var callExcludeNumbers by mutableStateOf(settings.callExcludeNumbers); private set
+    var callReplyFromSameSim by mutableStateOf(settings.callReplyFromSameSim); private set
+    var callOnMissed by mutableStateOf(settings.callOnMissed); private set
+    var callOnIncoming by mutableStateOf(settings.callOnIncoming); private set
+    var callOnOutgoing by mutableStateOf(settings.callOnOutgoing); private set
+    var bulkDelaySeconds by mutableStateOf(settings.bulkDelaySeconds); private set
 
     fun saveGroqKey(v: String) { settings.groqApiKey = v; groqKey = v }
     fun saveGroqModel(v: String) { settings.groqModel = v; groqModel = v }
@@ -154,6 +180,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun updateCallWhatsappTarget(v: String) { settings.callWhatsappTarget = v; callWhatsappTarget = v }
     fun updateCallWhatsappText(v: String) { settings.callWhatsappText = v; callWhatsappText = v }
     fun setCallExclude(v: String) { settings.callExcludeNumbers = v; callExcludeNumbers = v }
+    fun setCallSameSim(v: Boolean) { settings.callReplyFromSameSim = v; callReplyFromSameSim = v }
+    fun setCallOnMissed(v: Boolean) { settings.callOnMissed = v; callOnMissed = v }
+    fun setCallOnIncoming(v: Boolean) { settings.callOnIncoming = v; callOnIncoming = v }
+    fun setCallOnOutgoing(v: Boolean) { settings.callOnOutgoing = v; callOnOutgoing = v }
+    fun setBulkDelay(v: Int) { settings.bulkDelaySeconds = v; bulkDelaySeconds = v }
 
     // ---------- Lead actions ----------
     fun addLead(name: String, phone: String, email: String, note: String) {
@@ -195,6 +226,22 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---------- Inbox ----------
     fun clearInbox() = viewModelScope.launch { db.notificationDao().clearAll() }
+
+    // ---------- Daily AI analysis ----------
+    fun analyzeToday(onResult: (AiResult) -> Unit) {
+        viewModelScope.launch {
+            val startOfDay = run {
+                val c = java.util.Calendar.getInstance()
+                c.set(java.util.Calendar.HOUR_OF_DAY, 0); c.set(java.util.Calendar.MINUTE, 0)
+                c.set(java.util.Calendar.SECOND, 0); c.set(java.util.Calendar.MILLISECOND, 0)
+                c.timeInMillis
+            }
+            val msgs = db.notificationDao().since(startOfDay)
+            val block = msgs.joinToString("\n") { "- ${it.person} (${it.appLabel}): ${it.text}" }
+            val res = GroqClient.analyzeDay(settings.groqApiKey, settings.groqModel, block)
+            onResult(res)
+        }
+    }
 
     // ---------- AI ----------
     fun draftReply(incomingText: String, person: String, onResult: (AiResult) -> Unit) {

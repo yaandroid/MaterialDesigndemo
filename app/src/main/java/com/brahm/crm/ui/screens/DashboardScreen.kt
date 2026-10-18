@@ -1,5 +1,6 @@
 package com.brahm.crm.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,7 +37,7 @@ import com.brahm.crm.ui.components.StageChip
 import com.brahm.crm.ui.components.StatCard
 
 @Composable
-fun DashboardScreen(vm: AppViewModel) {
+fun DashboardScreen(vm: AppViewModel, onNavigate: (String) -> Unit = {}) {
     val leadCount by vm.leadCount.collectAsState()
     val newCount by vm.newCount.collectAsState()
     val followCount by vm.followCount.collectAsState()
@@ -72,6 +73,10 @@ fun DashboardScreen(vm: AppViewModel) {
             StatCard("Follow-up", followCount.toString(), Icons.Filled.Schedule, Color(0xFFE08A00), Modifier.weight(1f))
             StatCard("Open tasks", openTasks.toString(), Icons.AutoMirrored.Filled.List, Color(0xFF00897B), Modifier.weight(1f))
         }
+
+        Spacer(Modifier.height(20.dp))
+        SectionTitle("Quick access")
+        QuickGrid(onNavigate)
 
         Spacer(Modifier.height(20.dp))
         SectionTitle("Pipeline")
@@ -132,6 +137,54 @@ fun DashboardScreen(vm: AppViewModel) {
             }
         }
         Spacer(Modifier.height(24.dp))
+    }
+}
+
+private data class Shortcut(val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector, val route: String)
+
+@Composable
+private fun QuickGrid(onNavigate: (String) -> Unit) {
+    val items = listOf(
+        Shortcut("Leads", androidx.compose.material.icons.Icons.Filled.People, "leads"),
+        Shortcut("Board", androidx.compose.material.icons.Icons.Filled.ViewKanban, "kanban"),
+        Shortcut("Inbox", androidx.compose.material.icons.Icons.Filled.Inbox, "inbox"),
+        Shortcut("Broadcast", androidx.compose.material.icons.Icons.Filled.Campaign, "broadcast"),
+        Shortcut("Call Reply", androidx.compose.material.icons.Icons.Filled.PhoneCallback, "call_reply"),
+        Shortcut("Analytics", androidx.compose.material.icons.Icons.Filled.Insights, "analytics"),
+        Shortcut("WA Web", androidx.compose.material.icons.Icons.Filled.Language, "wa_web"),
+        Shortcut("Settings", androidx.compose.material.icons.Icons.Filled.Settings, "settings")
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        items.chunked(4).forEach { row ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                row.forEach { s ->
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(1.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(84.dp)
+                            .clickable { onNavigate(s.route) }
+                    ) {
+                        Column(
+                            Modifier.fillMaxWidth().padding(8.dp),
+                            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            androidx.compose.material3.Icon(
+                                s.icon, contentDescription = s.label,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.height(26.dp)
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            Text(s.label, fontSize = 11.sp, maxLines = 1)
+                        }
+                    }
+                }
+                repeat(4 - row.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
     }
 }
 

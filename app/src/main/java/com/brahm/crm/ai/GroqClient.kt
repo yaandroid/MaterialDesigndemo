@@ -85,15 +85,37 @@ object GroqClient {
             append("Customer name: ").append(personName.ifBlank { "Customer" }).append("\n")
             append("Their message: ").append(incomingText)
         }
+        return chatRaw(apiKey, model, sys, user, 400)
+    }
+
+    /** Daily analysis of today's incoming messages. Returns a readable summary. */
+    suspend fun analyzeDay(
+        apiKey: String,
+        model: String,
+        messagesBlock: String
+    ): AiResult {
+        if (apiKey.isBlank()) return AiResult.Err("Groq API key missing. Add it in Settings.")
+        val sys = buildString {
+            append("You analyse a business's incoming messages for the day. ")
+            append("Given a list of messages (person + text), produce a concise Hindi/Hinglish summary with: ")
+            append("1) total count, 2) how many look important/urgent and why, ")
+            append("3) the main problems or requests customers raised, ")
+            append("4) who needs a reply first (name/number if present). ")
+            append("Be factual and brief, use short bullet lines. Do not invent data.")
+        }
+        return chatRaw(apiKey, model, sys, messagesBlock.ifBlank { "No messages today." }, 700)
+    }
+
+    private suspend fun chatRaw(
+        apiKey: String, model: String, sys: String, user: String, maxTokens: Int
+    ): AiResult {
         return try {
             val resp = api.chat(
                 auth = "Bearer $apiKey",
                 body = ChatRequest(
                     model = model,
-                    messages = listOf(
-                        ChatMessage("system", sys),
-                        ChatMessage("user", user)
-                    )
+                    messages = listOf(ChatMessage("system", sys), ChatMessage("user", user)),
+                    maxTokens = maxTokens
                 )
             )
             val text = resp.choices?.firstOrNull()?.message?.content?.trim()

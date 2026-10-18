@@ -91,7 +91,7 @@ fun CallReplyScreen(vm: AppViewModel) {
         // Master switch
         CardBox {
             ToggleRow(
-                "Enable missed-call auto-reply",
+                "Enable call auto-reply",
                 "Master switch for this feature",
                 vm.callReplyEnabled
             ) { on ->
@@ -102,6 +102,15 @@ fun CallReplyScreen(vm: AppViewModel) {
             OutlinedButton(onClick = { requestCallPerms() }, modifier = Modifier.fillMaxWidth()) {
                 Text("Grant call & SMS permissions")
             }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        // Which call events trigger a reply
+        CardBox("Reply on which calls") {
+            ToggleRow("Missed calls", "Rang but not answered", vm.callOnMissed) { vm.setCallOnMissed(it) }
+            ToggleRow("Incoming (answered)", "After an answered incoming call", vm.callOnIncoming) { vm.setCallOnIncoming(it) }
+            ToggleRow("Outgoing calls", "After a call you made", vm.callOnOutgoing) { vm.setCallOnOutgoing(it) }
         }
 
         Spacer(Modifier.height(12.dp))
@@ -123,7 +132,14 @@ fun CallReplyScreen(vm: AppViewModel) {
             )
 
             Spacer(Modifier.height(10.dp))
-            Text("Send from", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            ToggleRow(
+                "Reply from the same SIM",
+                "Use whichever SIM the call came on (when the phone reports it)",
+                vm.callReplyFromSameSim
+            ) { vm.setCallSameSim(it) }
+
+            Spacer(Modifier.height(6.dp))
+            Text("Default SIM (fallback)", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(4.dp))
             sims.forEach { sim ->
                 Row(

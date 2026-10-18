@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Inbox
+import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.People
@@ -52,6 +53,7 @@ import androidx.navigation.compose.rememberNavController
 import com.brahm.crm.ui.AppViewModel
 import com.brahm.crm.ui.BrahmTheme
 import com.brahm.crm.ui.screens.DashboardScreen
+import com.brahm.crm.ui.screens.AnalyticsScreen
 import com.brahm.crm.ui.screens.BroadcastScreen
 import com.brahm.crm.ui.screens.CallReplyScreen
 import com.brahm.crm.ui.screens.ChatThreadScreen
@@ -69,6 +71,7 @@ private enum class Dest(val route: String, val title: String, val icon: ImageVec
     INBOX("inbox", "Inbox", Icons.Filled.Inbox),
     CALL_REPLY("call_reply", "Call Auto-Reply", Icons.Filled.PhoneCallback),
     BROADCAST("broadcast", "Broadcast", Icons.Filled.Campaign),
+    ANALYTICS("analytics", "Analytics", Icons.Filled.Insights),
     WHATSAPP_WEB("wa_web", "WhatsApp Web", Icons.Filled.Language),
     SETTINGS("settings", "Settings", Icons.Filled.Settings)
 }
@@ -159,7 +162,14 @@ private fun AppRoot(vm: AppViewModel) {
                     .fillMaxSize()
                     .padding(inner)
             ) {
-                composable(Dest.DASHBOARD.route) { DashboardScreen(vm) }
+                composable(Dest.DASHBOARD.route) {
+                    DashboardScreen(vm, onNavigate = { route ->
+                        navController.navigate(route) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true; restoreState = true
+                        }
+                    })
+                }
                 composable(Dest.LEADS.route) { LeadsScreen(vm) }
                 composable(Dest.KANBAN.route) { KanbanScreen(vm) }
                 composable(Dest.INBOX.route) {
@@ -169,6 +179,7 @@ private fun AppRoot(vm: AppViewModel) {
                 }
                 composable(Dest.CALL_REPLY.route) { CallReplyScreen(vm) }
                 composable(Dest.BROADCAST.route) { BroadcastScreen(vm) }
+                composable(Dest.ANALYTICS.route) { AnalyticsScreen(vm) }
                 composable(Dest.WHATSAPP_WEB.route) { WhatsAppWebScreen() }
                 composable(Dest.SETTINGS.route) { SettingsScreen(vm) }
                 composable("thread/{person}") { backStackEntry ->

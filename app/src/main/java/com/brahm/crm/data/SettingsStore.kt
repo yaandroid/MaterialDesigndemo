@@ -80,6 +80,28 @@ class SettingsStore private constructor(private val prefs: SharedPreferences) {
         get() = prefs.getString(KEY_CALL_EXCLUDE, "") ?: ""
         set(v) = prefs.edit().putString(KEY_CALL_EXCLUDE, v).apply()
 
+    /** Reply from whichever SIM the call came on (overrides callSimSubId when detectable). */
+    var callReplyFromSameSim: Boolean
+        get() = prefs.getBoolean(KEY_CALL_SAME_SIM, true)
+        set(v) = prefs.edit().putBoolean(KEY_CALL_SAME_SIM, v).apply()
+
+    var callOnMissed: Boolean
+        get() = prefs.getBoolean(KEY_CALL_ON_MISSED, true)
+        set(v) = prefs.edit().putBoolean(KEY_CALL_ON_MISSED, v).apply()
+
+    var callOnIncoming: Boolean
+        get() = prefs.getBoolean(KEY_CALL_ON_INCOMING, false)
+        set(v) = prefs.edit().putBoolean(KEY_CALL_ON_INCOMING, v).apply()
+
+    var callOnOutgoing: Boolean
+        get() = prefs.getBoolean(KEY_CALL_ON_OUTGOING, false)
+        set(v) = prefs.edit().putBoolean(KEY_CALL_ON_OUTGOING, v).apply()
+
+    /** Delay in seconds between each SMS in a bulk send (0 = no delay). */
+    var bulkDelaySeconds: Int
+        get() = prefs.getInt(KEY_BULK_DELAY, 0)
+        set(v) = prefs.edit().putInt(KEY_BULK_DELAY, v).apply()
+
     fun isExcluded(number: String): Boolean {
         val digits = number.filter { it.isDigit() }
         if (digits.isEmpty()) return true
@@ -113,6 +135,11 @@ class SettingsStore private constructor(private val prefs: SharedPreferences) {
         private const val KEY_CALL_WA_TARGET = "call_wa_target"
         private const val KEY_CALL_WA_TEXT = "call_wa_text"
         private const val KEY_CALL_EXCLUDE = "call_exclude"
+        private const val KEY_CALL_SAME_SIM = "call_same_sim"
+        private const val KEY_CALL_ON_MISSED = "call_on_missed"
+        private const val KEY_CALL_ON_INCOMING = "call_on_incoming"
+        private const val KEY_CALL_ON_OUTGOING = "call_on_outgoing"
+        private const val KEY_BULK_DELAY = "bulk_delay_seconds"
         const val DEFAULT_MODEL = "llama-3.3-70b-versatile"
         const val DEFAULT_MISSED_SMS =
             "Namaste, abhi hum aapki call nahi utha paaye. Kripya batayein hum kaise madad karein. — BRAHM InnerBrain"

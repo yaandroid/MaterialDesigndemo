@@ -30,7 +30,12 @@ object CallReplyManager {
     private const val CHANNEL_ID = "brahm_call_reply"
     private const val CHANNEL_NAME = "Call auto-reply"
 
-    fun handleMissedCall(context: Context, rawNumber: String?) {
+    fun handleCall(
+        context: Context,
+        rawNumber: String?,
+        event: PhoneStateReceiver.Event,
+        callSubId: Int
+    ) {
         val number = rawNumber?.trim().orEmpty()
         if (number.isEmpty()) return
 
@@ -38,11 +43,28 @@ object CallReplyManager {
         if (!s.callReplyEnabled) return
         if (s.isExcluded(number)) return
 
+        // Honour per-event toggles.
+        val allowed = when (event) {
+            PhoneStateReceiver.Event.MISSED -> s.callOnMissed
+            PhoneStateReceiver.Event.INCOMING -> s.callOnIncoming
+            PhoneStateReceiver.Event.OUTGOING -> s.callOnOutgoing
+        }
+        if (!allowed) return
+
+        // Choose the SIM: same SIM the call used (if detected + toggle), else the chosen default.
+        val subId = if (s.callReplyFromSameSim && callSubId >= 0) callSubId else s.callSimSubId
+
+        val label = when (event) {
+            PhoneStateReceiver.Event.MISSED -> "Missed call: $number"
+            PhoneStateReceiver.Event.INCOMING -> "Call: $number"
+            PhoneStateReceiver.Event.OUTGOING -> "You called: $number"
+        }
+
         if (s.callSmsEnabled) {
-            trySendSms(context, number, s.callSmsText, s.callSimSubId)
+            trySendSms(context, number, s.callSmsText, subId)
         }
         if (s.callWhatsappEnabled) {
-            postAssisted(context, number, number, s.callWhatsappText, s.callWhatsappTarget, "Missed call: $number")
+            postAssisted(context, number, number, s.callWhatsappText, s.callWhatsappTarget, label)
         }
     }
 
