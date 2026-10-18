@@ -52,6 +52,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var aiEnabled by mutableStateOf(settings.aiEnabled); private set
     var contactsEnabled by mutableStateOf(settings.contactsEnabled); private set
     var replyTone by mutableStateOf(settings.defaultReplyTone); private set
+    var themeMode by mutableStateOf(settings.themeMode); private set
+    fun setThemeMode(v: String) { settings.themeMode = v; themeMode = v }
 
     // ---- Call auto-reply as UI state ----
     var callReplyEnabled by mutableStateOf(settings.callReplyEnabled); private set

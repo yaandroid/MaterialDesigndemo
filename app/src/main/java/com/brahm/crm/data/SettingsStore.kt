@@ -39,6 +39,11 @@ class SettingsStore private constructor(private val prefs: SharedPreferences) {
         get() = prefs.getString(KEY_TONE, "Friendly, professional") ?: "Friendly, professional"
         set(v) = prefs.edit().putString(KEY_TONE, v).apply()
 
+    /** "system" | "light" | "dark" — default light to match the brand design. */
+    var themeMode: String
+        get() = prefs.getString(KEY_THEME, "light") ?: "light"
+        set(v) = prefs.edit().putString(KEY_THEME, v).apply()
+
     // ---- Missed-call auto-reply ----
     var callReplyEnabled: Boolean
         get() = prefs.getBoolean(KEY_CALL_ENABLED, false)
@@ -99,6 +104,7 @@ class SettingsStore private constructor(private val prefs: SharedPreferences) {
         private const val KEY_AI = "feature_ai"
         private const val KEY_CONTACTS = "feature_contacts"
         private const val KEY_TONE = "reply_tone"
+        private const val KEY_THEME = "theme_mode"
         private const val KEY_CALL_ENABLED = "call_reply_enabled"
         private const val KEY_CALL_SMS = "call_sms_enabled"
         private const val KEY_CALL_SMS_TEXT = "call_sms_text"

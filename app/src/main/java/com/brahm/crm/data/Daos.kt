@@ -61,6 +61,13 @@ interface NotificationDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(log: NotificationLog): Long
 
+    /** Guards against WhatsApp etc. re-posting the same message many times. */
+    @Query(
+        "SELECT COUNT(*) FROM notifications WHERE person = :person AND packageName = :pkg " +
+            "AND text = :text AND postedAt >= :since"
+    )
+    suspend fun recentDuplicateCount(person: String, pkg: String, text: String, since: Long): Int
+
     @Query(
         """
         SELECT person AS person,

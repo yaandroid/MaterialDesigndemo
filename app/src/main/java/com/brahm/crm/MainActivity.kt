@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -70,8 +71,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            BrahmTheme {
-                AppRoot()
+            val vm: AppViewModel = viewModel()
+            val systemDark = isSystemInDarkTheme()
+            val dark = when (vm.themeMode) {
+                "dark" -> true
+                "light" -> false
+                else -> systemDark
+            }
+            BrahmTheme(darkTheme = dark) {
+                AppRoot(vm)
             }
         }
     }
@@ -79,8 +87,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppRoot() {
-    val vm: AppViewModel = viewModel()
+private fun AppRoot(vm: AppViewModel) {
     val navController = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -65,6 +66,23 @@ fun SettingsScreen(vm: AppViewModel) {
             .padding(16.dp)
     ) {
         Text("Settings", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(12.dp))
+
+        // ---- Appearance ----
+        SettingsCard("Appearance") {
+            Text("Theme", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            Spacer(Modifier.height(6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf("light" to "Light", "dark" to "Dark", "system" to "System").forEach { (v, label) ->
+                    FilterChip(
+                        selected = vm.themeMode == v,
+                        onClick = { vm.setThemeMode(v) },
+                        label = { Text(label) }
+                    )
+                }
+            }
+        }
+
         Spacer(Modifier.height(12.dp))
 
         // ---- AI / Groq ----

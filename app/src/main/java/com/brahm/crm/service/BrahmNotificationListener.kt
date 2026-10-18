@@ -50,15 +50,24 @@ class BrahmNotificationListener : NotificationListenerService() {
             return
         }
 
+        val body = text.ifEmpty { "(no text)" }
         val log = NotificationLog(
             person = person,
             packageName = pkg,
             appLabel = appLabel,
-            text = text.ifEmpty { "(no text)" },
+            text = body,
             postedAt = if (sbn.postTime > 0) sbn.postTime else System.currentTimeMillis()
         )
         scope.launch {
-            runCatching { BrahmApp.db.notificationDao().insert(log) }
+            runCatching {
+                val dao = BrahmApp.db.notificationDao()
+                // Skip if the same message from the same person arrived in the last 60s
+                // (messaging apps re-post a notification several times as it updates).
+                val since = System.currentTimeMillis() - 60_000L
+                if (dao.recentDuplicateCount(person, pkg, body, since) == 0) {
+                    dao.insert(log)
+                }
+            }
         }
     }
 
