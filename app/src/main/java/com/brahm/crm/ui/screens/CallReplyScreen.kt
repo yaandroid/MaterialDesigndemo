@@ -108,9 +108,9 @@ fun CallReplyScreen(vm: AppViewModel) {
 
         // Which call events trigger a reply
         CardBox("Reply on which calls") {
-            ToggleRow("Missed calls", "Rang but not answered", vm.callOnMissed) { vm.setCallOnMissed(it) }
-            ToggleRow("Incoming (answered)", "After an answered incoming call", vm.callOnIncoming) { vm.setCallOnIncoming(it) }
-            ToggleRow("Outgoing calls", "After a call you made", vm.callOnOutgoing) { vm.setCallOnOutgoing(it) }
+            ToggleRow("Missed calls", "Rang but not answered", vm.callOnMissed) { vm.updateCallOnMissed(it) }
+            ToggleRow("Incoming (answered)", "After an answered incoming call", vm.callOnIncoming) { vm.updateCallOnIncoming(it) }
+            ToggleRow("Outgoing calls", "After a call you made", vm.callOnOutgoing) { vm.updateCallOnOutgoing(it) }
         }
 
         Spacer(Modifier.height(12.dp))

@@ -181,9 +181,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun updateCallWhatsappText(v: String) { settings.callWhatsappText = v; callWhatsappText = v }
     fun setCallExclude(v: String) { settings.callExcludeNumbers = v; callExcludeNumbers = v }
     fun setCallSameSim(v: Boolean) { settings.callReplyFromSameSim = v; callReplyFromSameSim = v }
-    fun setCallOnMissed(v: Boolean) { settings.callOnMissed = v; callOnMissed = v }
-    fun setCallOnIncoming(v: Boolean) { settings.callOnIncoming = v; callOnIncoming = v }
-    fun setCallOnOutgoing(v: Boolean) { settings.callOnOutgoing = v; callOnOutgoing = v }
+    fun updateCallOnMissed(v: Boolean) { settings.callOnMissed = v; callOnMissed = v }
+    fun updateCallOnIncoming(v: Boolean) { settings.callOnIncoming = v; callOnIncoming = v }
+    fun updateCallOnOutgoing(v: Boolean) { settings.callOnOutgoing = v; callOnOutgoing = v }
     fun setBulkDelay(v: Int) { settings.bulkDelaySeconds = v; bulkDelaySeconds = v }
 
     // ---------- Lead actions ----------
