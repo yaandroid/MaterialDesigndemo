@@ -39,6 +39,52 @@ class SettingsStore private constructor(private val prefs: SharedPreferences) {
         get() = prefs.getString(KEY_TONE, "Friendly, professional") ?: "Friendly, professional"
         set(v) = prefs.edit().putString(KEY_TONE, v).apply()
 
+    // ---- Missed-call auto-reply ----
+    var callReplyEnabled: Boolean
+        get() = prefs.getBoolean(KEY_CALL_ENABLED, false)
+        set(v) = prefs.edit().putBoolean(KEY_CALL_ENABLED, v).apply()
+
+    var callSmsEnabled: Boolean
+        get() = prefs.getBoolean(KEY_CALL_SMS, true)
+        set(v) = prefs.edit().putBoolean(KEY_CALL_SMS, v).apply()
+
+    var callSmsText: String
+        get() = prefs.getString(KEY_CALL_SMS_TEXT, DEFAULT_MISSED_SMS) ?: DEFAULT_MISSED_SMS
+        set(v) = prefs.edit().putString(KEY_CALL_SMS_TEXT, v).apply()
+
+    /** -1 = system default SIM; otherwise a SubscriptionInfo subscriptionId. */
+    var callSimSubId: Int
+        get() = prefs.getInt(KEY_CALL_SIM, -1)
+        set(v) = prefs.edit().putInt(KEY_CALL_SIM, v).apply()
+
+    var callWhatsappEnabled: Boolean
+        get() = prefs.getBoolean(KEY_CALL_WA, true)
+        set(v) = prefs.edit().putBoolean(KEY_CALL_WA, v).apply()
+
+    /** "wa" = normal WhatsApp, "wab" = WhatsApp Business */
+    var callWhatsappTarget: String
+        get() = prefs.getString(KEY_CALL_WA_TARGET, "wa") ?: "wa"
+        set(v) = prefs.edit().putString(KEY_CALL_WA_TARGET, v).apply()
+
+    var callWhatsappText: String
+        get() = prefs.getString(KEY_CALL_WA_TEXT, DEFAULT_MISSED_WA) ?: DEFAULT_MISSED_WA
+        set(v) = prefs.edit().putString(KEY_CALL_WA_TEXT, v).apply()
+
+    /** Comma/newline separated numbers that must NOT get an auto reply. */
+    var callExcludeNumbers: String
+        get() = prefs.getString(KEY_CALL_EXCLUDE, "") ?: ""
+        set(v) = prefs.edit().putString(KEY_CALL_EXCLUDE, v).apply()
+
+    fun isExcluded(number: String): Boolean {
+        val digits = number.filter { it.isDigit() }
+        if (digits.isEmpty()) return true
+        val last10 = digits.takeLast(10)
+        return callExcludeNumbers.split(',', '\n', ' ', ';')
+            .map { it.filter { c -> c.isDigit() } }
+            .filter { it.isNotEmpty() }
+            .any { it.takeLast(10) == last10 }
+    }
+
     fun registerListener(l: SharedPreferences.OnSharedPreferenceChangeListener) =
         prefs.registerOnSharedPreferenceChangeListener(l)
 
@@ -53,7 +99,19 @@ class SettingsStore private constructor(private val prefs: SharedPreferences) {
         private const val KEY_AI = "feature_ai"
         private const val KEY_CONTACTS = "feature_contacts"
         private const val KEY_TONE = "reply_tone"
+        private const val KEY_CALL_ENABLED = "call_reply_enabled"
+        private const val KEY_CALL_SMS = "call_sms_enabled"
+        private const val KEY_CALL_SMS_TEXT = "call_sms_text"
+        private const val KEY_CALL_SIM = "call_sim_subid"
+        private const val KEY_CALL_WA = "call_wa_enabled"
+        private const val KEY_CALL_WA_TARGET = "call_wa_target"
+        private const val KEY_CALL_WA_TEXT = "call_wa_text"
+        private const val KEY_CALL_EXCLUDE = "call_exclude"
         const val DEFAULT_MODEL = "llama-3.3-70b-versatile"
+        const val DEFAULT_MISSED_SMS =
+            "Namaste, abhi hum aapki call nahi utha paaye. Kripya batayein hum kaise madad karein. — BRAHM InnerBrain"
+        const val DEFAULT_MISSED_WA =
+            "Namaste 🙏 abhi call miss ho gayi. Batayein hum kaise madad karein? — BRAHM InnerBrain"
 
         @Volatile private var INSTANCE: SettingsStore? = null
 

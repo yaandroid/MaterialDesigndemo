@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Inbox
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.PhoneCallback
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ViewKanban
 import androidx.compose.material3.DrawerValue
@@ -48,6 +49,7 @@ import androidx.navigation.compose.rememberNavController
 import com.brahm.crm.ui.AppViewModel
 import com.brahm.crm.ui.BrahmTheme
 import com.brahm.crm.ui.screens.DashboardScreen
+import com.brahm.crm.ui.screens.CallReplyScreen
 import com.brahm.crm.ui.screens.InboxScreen
 import com.brahm.crm.ui.screens.KanbanScreen
 import com.brahm.crm.ui.screens.LeadsScreen
@@ -59,6 +61,7 @@ private enum class Dest(val route: String, val title: String, val icon: ImageVec
     LEADS("leads", "Leads (CRM)", Icons.Filled.People),
     KANBAN("kanban", "Board", Icons.Filled.ViewKanban),
     INBOX("inbox", "Inbox", Icons.Filled.Inbox),
+    CALL_REPLY("call_reply", "Call Auto-Reply", Icons.Filled.PhoneCallback),
     SETTINGS("settings", "Settings", Icons.Filled.Settings)
 }
 
@@ -141,6 +144,7 @@ private fun AppRoot() {
                 composable(Dest.LEADS.route) { LeadsScreen(vm) }
                 composable(Dest.KANBAN.route) { KanbanScreen(vm) }
                 composable(Dest.INBOX.route) { InboxScreen(vm) }
+                composable(Dest.CALL_REPLY.route) { CallReplyScreen(vm) }
                 composable(Dest.SETTINGS.route) { SettingsScreen(vm) }
             }
         }

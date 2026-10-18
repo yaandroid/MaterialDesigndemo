@@ -53,12 +53,31 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var contactsEnabled by mutableStateOf(settings.contactsEnabled); private set
     var replyTone by mutableStateOf(settings.defaultReplyTone); private set
 
+    // ---- Call auto-reply as UI state ----
+    var callReplyEnabled by mutableStateOf(settings.callReplyEnabled); private set
+    var callSmsEnabled by mutableStateOf(settings.callSmsEnabled); private set
+    var callSmsText by mutableStateOf(settings.callSmsText); private set
+    var callSimSubId by mutableStateOf(settings.callSimSubId); private set
+    var callWhatsappEnabled by mutableStateOf(settings.callWhatsappEnabled); private set
+    var callWhatsappTarget by mutableStateOf(settings.callWhatsappTarget); private set
+    var callWhatsappText by mutableStateOf(settings.callWhatsappText); private set
+    var callExcludeNumbers by mutableStateOf(settings.callExcludeNumbers); private set
+
     fun saveGroqKey(v: String) { settings.groqApiKey = v; groqKey = v }
     fun saveGroqModel(v: String) { settings.groqModel = v; groqModel = v }
     fun setInbox(v: Boolean) { settings.inboxEnabled = v; inboxEnabled = v }
     fun setAi(v: Boolean) { settings.aiEnabled = v; aiEnabled = v }
     fun setContacts(v: Boolean) { settings.contactsEnabled = v; contactsEnabled = v }
     fun setTone(v: String) { settings.defaultReplyTone = v; replyTone = v }
+
+    fun setCallReply(v: Boolean) { settings.callReplyEnabled = v; callReplyEnabled = v }
+    fun setCallSms(v: Boolean) { settings.callSmsEnabled = v; callSmsEnabled = v }
+    fun setCallSmsText(v: String) { settings.callSmsText = v; callSmsText = v }
+    fun setCallSim(v: Int) { settings.callSimSubId = v; callSimSubId = v }
+    fun setCallWhatsapp(v: Boolean) { settings.callWhatsappEnabled = v; callWhatsappEnabled = v }
+    fun setCallWhatsappTarget(v: String) { settings.callWhatsappTarget = v; callWhatsappTarget = v }
+    fun setCallWhatsappText(v: String) { settings.callWhatsappText = v; callWhatsappText = v }
+    fun setCallExclude(v: String) { settings.callExcludeNumbers = v; callExcludeNumbers = v }
 
     // ---------- Lead actions ----------
     fun addLead(name: String, phone: String, email: String, note: String) {
